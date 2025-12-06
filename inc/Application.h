@@ -6,6 +6,7 @@
 #include <bobcat_ui/dropdown.h>
 #include <bobcat_ui/window.h>
 #include <bobcat_ui/checkbox.h>
+#include <Graph.h>
 
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Text_Buffer.H>
@@ -23,8 +24,14 @@ class Application : public bobcat::Application_ {
     Fl_Text_Display *outputDisplay;
     Fl_Text_Buffer *outputBuffer;
 
+    Graph graph;
+
 public:
     Application(); // Constructor for the app
+
+    void loadGraphFromFile(const std::string& filename);
+
+    void populateDropdowns();
 };
 
 #endif

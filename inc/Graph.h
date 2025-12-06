@@ -28,18 +28,21 @@ inline std::ostream &operator<<(std::ostream &os, Vertex *v) {
 struct Edge {
     Vertex *from;
     Vertex *to;
-    int weight;
+    int price;
+    double time;
 
-    Edge(Vertex *from, Vertex *to, int weight) {
+    Edge(Vertex *from, Vertex *to, double price, double time) {
         this->from = from;
         this->to = to;
-        this->weight = weight;
+        this->price = price;
+        this->time = time;
     }
 };
 
 inline std::ostream &operator<<(std::ostream &os, Edge *e) {
-    os << "(" << e->from << ", " << e->to << ") - " << e->weight;
-
+    os << "(" << e->from << ", " << e->to << ") - " << e->to->data
+        << ") price=" << e->price
+        << "time=" << e->time;
     return os;
 }
 
@@ -61,8 +64,8 @@ struct Waypoint {
         for (int i = 0; i < vertex->edgeList.size(); i++) {
             Waypoint *temp = new Waypoint(vertex->edgeList[i]->to);
             temp->parent = this;
-            temp->weight = vertex->edgeList[i]->weight;
-            temp->partialCost = partialCost + vertex->edgeList[i]->weight;
+            temp->weight = vertex->edgeList[i]->price;
+            temp->partialCost = partialCost + vertex->edgeList[i]->price;
             children.append(temp);
         }
     }
@@ -82,15 +85,26 @@ inline std::ostream &operator<<(std::ostream &os, Waypoint *wp) {
 struct Graph {
     ArrayList<Vertex *> vertices;
 
-    void addVertex(Vertex *v) { vertices.append(v); }
-
-    void addEdge(Vertex *x, Vertex *y, int w) {
-        x->edgeList.append(new Edge(x, y, w));
-        y->edgeList.append(new Edge(y, x, w));
+    Vertex* getOrCreateVertex(const std::string& name){
+    for(int i = 0; i < vertices.size(); i++){
+        if (vertices[i]->data == name){
+            return vertices[i];
+        }
+    }
+    Vertex* v = new Vertex(name);
+    vertices.append(v);
+    return v;
     }
 
-    void addDirectedEdge(Vertex *x, Vertex *y, int w) {
-        x->edgeList.append(new Edge(x, y, w));
+    void addVertex(Vertex *v) { vertices.append(v); }
+
+    void addEdge(Vertex *x, Vertex *y, int price, double time) {
+        x->edgeList.append(new Edge(x, y, price, time));
+        y->edgeList.append(new Edge(y, x, price, time));
+    }
+
+    void addDirectedEdge(Vertex *x, Vertex *y, int price, double time) {
+        x->edgeList.append(new Edge(x, y, price, time));
     }
 
     Waypoint *bfs(Vertex *start, Vertex *destination) {

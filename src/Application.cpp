@@ -3,6 +3,10 @@
 #include <bobcat_ui/checkbox.h>
 #include <bobcat_ui/dropdown.h>
 #include <bobcat_ui/window.h>
+#include <iostream>
+#include <Graph.h>
+#include <fstream>
+#include <sstream>
 
 using namespace bobcat;
 using namespace std;
@@ -24,6 +28,40 @@ Application::Application(){
 
     outputDisplay = new Fl_Text_Display(20, 320, 360, 150, "Flight Results:");
     outputDisplay->buffer(outputBuffer);
+    outputDisplay->textsize(14);
 
     window->show();
+}
+
+void Application::loadGraphFromFile(const string& filename){
+    ifstream file(filename);
+    if (!file.is_open()){
+        cout << "Could not open file: " << filename << endl;
+        return;
+    }
+
+    string from, to;
+    int price;
+    double time;
+
+    while(file >> from >> to >> price >> time){
+
+        Vertex* vFrom = graph.getOrCreateVertex(from);
+        Vertex* vTo   = graph.getOrCreateVertex(to);
+
+        graph.addDirectedEdge(vFrom, vTo, price, time);
+    }
+
+    file.close();
+}
+
+void Application::populateDropdowns() {
+    start->clear();
+    dest->clear();
+
+    for (int i = 0; i < graph.vertices.size(); i++) {
+        Vertex* v = graph.vertices[i];
+        start->add(v->data.c_str());
+        dest->add(v->data.c_str());
+    }
 }
