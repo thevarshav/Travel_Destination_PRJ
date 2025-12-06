@@ -1,12 +1,17 @@
 #include <iostream>
 #include <Graph.h>
+#include <Application.h>
 
 using namespace std;
 
 
 int main(){
 
-    Vertex* sfo = new Vertex("San Francisco");
+    Application app;
+
+    return app.run();
+
+    /*Vertex* sfo = new Vertex("San Francisco");
     Vertex* nyc = new Vertex("New York");
     Vertex* rio = new Vertex("Rio De Janeiro");
     Vertex* paris = new Vertex("Paris");
@@ -61,5 +66,5 @@ int main(){
     }
 
     
-    return 0;
+    return 0;*/
 }
