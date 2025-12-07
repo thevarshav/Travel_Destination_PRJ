@@ -29,6 +29,8 @@ class Application : public bobcat::Application_ {
 public:
     Application(); // Constructor for the app
 
+    void loadVerticesFromFile(const std::string& filename);
+
     void loadGraphFromFile(const std::string& filename);
 
     void populateDropdowns();

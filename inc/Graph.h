@@ -28,7 +28,7 @@ inline std::ostream &operator<<(std::ostream &os, Vertex *v) {
 struct Edge {
     Vertex *from;
     Vertex *to;
-    int price;
+    double price;
     double time;
 
     Edge(Vertex *from, Vertex *to, double price, double time) {
@@ -52,12 +52,16 @@ struct Waypoint {
     ArrayList<Waypoint *> children;
     int partialCost;
     int weight;
+    double totalPrice = 0;
+    double totalTime = 0;
 
     Waypoint(Vertex *v) {
         parent = nullptr;
         vertex = v;
         weight = 0;
         partialCost = 0;
+        totalPrice = 0;
+        totalTime = 0;
     }
 
     void expand() {

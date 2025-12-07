@@ -1,4 +1,5 @@
 #include <Application.h>
+#include <bobcat_ui/bobcat_ui.h>
 #include <bobcat_ui/button.h>
 #include <bobcat_ui/checkbox.h>
 #include <bobcat_ui/dropdown.h>
@@ -7,6 +8,7 @@
 #include <Graph.h>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 using namespace bobcat;
 using namespace std;
@@ -30,27 +32,56 @@ Application::Application(){
     outputDisplay->buffer(outputBuffer);
     outputDisplay->textsize(14);
 
+    loadVerticesFromFile("assets/vertices.csv");
+    loadGraphFromFile("assets/edges.csv");
+    populateDropdowns();
+
+
     window->show();
 }
-
-void Application::loadGraphFromFile(const string& filename){
+//Load airports from vertices.csv
+void Application::loadVerticesFromFile(const std::string& filename){
     ifstream file(filename);
     if (!file.is_open()){
-        cout << "Could not open file: " << filename << endl;
+        cout << "Could not open vertices file: " << filename << endl;
         return;
     }
 
-    string from, to;
-    int price;
-    double time;
-
-    while(file >> from >> to >> price >> time){
-
-        Vertex* vFrom = graph.getOrCreateVertex(from);
-        Vertex* vTo   = graph.getOrCreateVertex(to);
-
-        graph.addDirectedEdge(vFrom, vTo, price, time);
+    string line;
+    while(getline(file, line)){
+        if(line.empty()) continue;
+        graph.getOrCreateVertex(line);
     }
+    file.close();
+
+}
+//Load edges from edges.csv
+void Application::loadGraphFromFile(const string& filename){
+    ifstream file(filename);
+    if (!file.is_open()){
+        cout << "Could not open edges file: " << filename << endl;
+        return;
+    }
+
+    string line;
+    while (getline(file, line)) {
+        if (line.empty()) continue;
+
+        stringstream ss(line);
+        int fromIndex, toIndex;
+        double time, price;
+        char comma;
+
+        ss >> fromIndex >> comma >> toIndex >> comma >> time >> comma >> price;
+
+        if (fromIndex >= 0 && fromIndex < graph.vertices.size() &&
+            toIndex >= 0 && toIndex < graph.vertices.size()) {
+            Vertex* vFrom = graph.vertices[fromIndex];
+            Vertex* vTo   = graph.vertices[toIndex];
+            graph.addDirectedEdge(vFrom, vTo, price, time);
+        }
+    }
+
 
     file.close();
 }
