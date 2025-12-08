@@ -34,6 +34,8 @@ public:
     void loadGraphFromFile(const std::string& filename);
 
     void populateDropdowns();
+
+    void onSearchClicked(bobcat::Widget* sender);
 };
 
 #endif

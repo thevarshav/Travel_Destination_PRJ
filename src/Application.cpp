@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 using namespace bobcat;
 using namespace std;
@@ -36,6 +37,7 @@ Application::Application(){
     loadGraphFromFile("assets/edges.csv");
     populateDropdowns();
 
+    ON_CLICK(search, Application::onSearchClicked);
 
     window->show();
 }
@@ -95,4 +97,69 @@ void Application::populateDropdowns() {
         start->add(v->data.c_str());
         dest->add(v->data.c_str());
     }
+}
+
+void Application::onSearchClicked(bobcat::Widget* sender){
+
+    string startAirport = start->text();
+    string destAirport = dest->text();
+
+    outputBuffer->text("");
+
+    if( startAirport == "" || destAirport == ""){
+        outputBuffer->text("Please select from an Airport from both dropdowns");
+        return;
+    }
+
+    Vertex* startV = graph.getOrCreateVertex(startAirport);
+    Vertex* destV = graph.getOrCreateVertex(destAirport);
+
+    Waypoint* result = nullptr;
+    string mode = "";
+
+    if(cheapest->checked()){
+        result = graph.ucs(startV, destV);
+        mode = "Cheapest Price";
+    }
+    else if(shortestTime->checked()){
+        result = graph.ucs(startV, destV);
+        mode = "Shortest Time";
+    }
+    else if(leastStops->checked()){
+        result = graph.bfs(startV,destV);
+        mode = "Fewest Stops";
+    }
+    else {
+        outputBuffer->text("Please check an option");
+        return;
+    }
+
+    //This will help us print out the traced route
+    vector<string> route;
+    Waypoint* cur = result;
+
+    while(cur != nullptr){
+        route.push_back(cur->vertex->data);
+        cur = cur->parent;
+    }
+    
+    reverse(route.begin(),route.end());
+    
+    int stops = route.size() - 1;
+
+    string output = "Search Type: " + mode + "\n\nRoute:\n";
+
+    for(int i = 0; i <route.size(); i++){
+        output += route[i];
+        if(i < route.size() - 1){
+            output += "->";
+        }
+    }
+
+    output += "\n\nStops: " + to_string(stops);
+    output += "\nTotal Price: " + to_string(result->totalPrice);
+    output += "\nTotal Time: " + to_string(result->totalTime);
+
+    outputBuffer->text(output.c_str());
+
 }
