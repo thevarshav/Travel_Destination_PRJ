@@ -118,11 +118,11 @@ void Application::onSearchClicked(bobcat::Widget* sender){
     string mode = "";
 
     if(cheapest->checked()){
-        result = graph.ucs(startV, destV);
+        result = graph.ucsPrice(startV, destV);
         mode = "Cheapest Price";
     }
     else if(shortestTime->checked()){
-        result = graph.ucs(startV, destV);
+        result = graph.ucsTime(startV, destV);
         mode = "Shortest Time";
     }
     else if(leastStops->checked()){

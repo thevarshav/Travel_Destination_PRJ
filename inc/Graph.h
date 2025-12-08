@@ -28,6 +28,7 @@ inline std::ostream &operator<<(std::ostream &os, Vertex *v) {
 struct Edge {
     Vertex *from;
     Vertex *to;
+    int partialCost;
     double price;
     double time;
 
@@ -50,15 +51,13 @@ struct Waypoint {
     Waypoint *parent;
     Vertex *vertex;
     ArrayList<Waypoint *> children;
+    double totalPrice;
+    double totalTime;
     int partialCost;
-    int weight;
-    double totalPrice = 0;
-    double totalTime = 0;
 
     Waypoint(Vertex *v) {
         parent = nullptr;
         vertex = v;
-        weight = 0;
         partialCost = 0;
         totalPrice = 0;
         totalTime = 0;
@@ -68,8 +67,8 @@ struct Waypoint {
         for (int i = 0; i < vertex->edgeList.size(); i++) {
             Waypoint *temp = new Waypoint(vertex->edgeList[i]->to);
             temp->parent = this;
-            temp->weight = vertex->edgeList[i]->price;
-            temp->partialCost = partialCost + vertex->edgeList[i]->price;
+            temp->totalPrice = this->totalPrice + vertex->edgeList[i]->price;
+            temp->totalTime = this->totalTime + vertex->edgeList[i]->time;
             children.append(temp);
         }
     }
@@ -225,7 +224,7 @@ struct Graph {
         return nullptr;
     }
 
-    Waypoint *ucs(Vertex *start, Vertex *destination) {
+    Waypoint *ucsPrice(Vertex *start, Vertex *destination) {
         std::cout << "Running Uniform Cost Search" << std::endl;
 
         // Should be a priority queue
@@ -261,8 +260,8 @@ struct Graph {
 
                     // Sort the frontier....
                     int j = frontier.size() - 1;
-                    while (j > 0 && frontier.data[j]->partialCost >
-                                        frontier.data[j - 1]->partialCost) {
+                    while (j > 0 && frontier.data[j]->totalPrice <
+                                        frontier.data[j - 1]->totalPrice) {
 
                         Waypoint *temp = frontier.data[j];
                         frontier.data[j] = frontier.data[j - 1];
@@ -281,8 +280,8 @@ struct Graph {
                     for (int k = 0; k < frontier.size(); k++) {
                         if (frontier[k]->vertex->data ==
                             result->children[i]->vertex->data) {
-                            if (frontier[k]->partialCost >
-                                result->children[i]->partialCost) {
+                            if (frontier[k]->totalPrice >
+                                result->children[i]->totalPrice) {
                                 worsePath = frontier[k];
                                 // The same node was visited before,
                                 // but with a higher partial cost
@@ -350,7 +349,47 @@ struct Graph {
 
         return nullptr;
     }
+    Waypoint* ucsTime(Vertex* start, Vertex* destination) {
+    ArrayList<Waypoint*> frontier;
+    HashTable<std::string> seen;
+
+    Waypoint* first = new Waypoint(start);
+    frontier.append(first);
+    seen.insert(start->data);
+
+    while (frontier.size() != 0) {
+        Waypoint* current = frontier.removeLast();
+
+        if (current->vertex == destination)
+            return current;
+
+        current->expand();
+
+        for (int i = 0; i < current->children.size(); i++) {
+            Waypoint* child = current->children[i];
+
+            if (!seen.search(child->vertex->data)) {
+                frontier.append(child);
+
+                // Sort by totalTime
+                int j = frontier.size() - 1;
+                while (j > 0 && frontier[j]->totalTime < frontier[j - 1]->totalTime) {
+                    Waypoint* temp = frontier[j];
+                    frontier[j] = frontier[j - 1];
+                    frontier[j - 1] = temp;
+                    j--;
+                }
+
+                seen.insert(child->vertex->data);
+            }
+        }
+    }
+
+    return nullptr;
+}
 };
+
+        
 
 inline std::ostream &operator<<(std::ostream &os, const Graph &g) {
     for (int i = 0; i < g.vertices.size(); i++) {
