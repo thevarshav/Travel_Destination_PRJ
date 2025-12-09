@@ -157,8 +157,8 @@ void Application::onSearchClicked(bobcat::Widget* sender){
     }
 
     output += "\n\nStops: " + to_string(stops);
-    output += "\nTotal Price: " + to_string(result->totalPrice);
-    output += "\nTotal Time: " + to_string(result->totalTime);
+    output += "\nTotal Price: $" + (roundFloat(result->totalPrice, 2));
+    output += "\nTotal Time: " + (roundFloat(result->totalTime, 2)) + " hours";
 
     outputBuffer->text(output.c_str());
 

@@ -29,8 +29,8 @@ struct Edge {
     Vertex *from;
     Vertex *to;
     int partialCost;
-    double price;
-    double time;
+    float price;
+    float time;
 
     Edge(Vertex *from, Vertex *to, double price, double time) {
         this->from = from;
@@ -51,8 +51,8 @@ struct Waypoint {
     Waypoint *parent;
     Vertex *vertex;
     ArrayList<Waypoint *> children;
-    double totalPrice;
-    double totalTime;
+    float totalPrice;
+    float totalTime;
     int partialCost;
 
     Waypoint(Vertex *v) {
