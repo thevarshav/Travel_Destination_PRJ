@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <FL/Fl_Radio_Button.H>
 
 using namespace bobcat;
 using namespace std;
@@ -21,9 +22,9 @@ Application::Application(){
     start = new Dropdown(20, 40, 360, 25, "Starting Point");
     dest = new Dropdown(20, 100, 360, 25, "Destination");
     
-    cheapest = new Checkbox(20, 160, 150, 25, "Cheapest Price");
-    shortestTime = new Checkbox(20, 190, 150, 25, "Shortest Time");
-    leastStops = new Checkbox(20, 220, 150, 25, "Fewest Stops");
+    cheapest = new Fl_Radio_Button(20, 160, 150, 25, "Cheapest Price");
+    shortestTime = new Fl_Radio_Button(20, 190, 150, 25, "Shortest Time");
+    leastStops = new Fl_Radio_Button(20, 220, 150, 25, "Fewest Stops");
 
     search = new Button(20, 260, 360, 25, "Search");
 
@@ -99,6 +100,12 @@ void Application::populateDropdowns() {
     }
 }
 
+void Application::enforceOneFilter(Fl_Radio_Button* selected){
+    if (selected != cheapest) cheapest->value(false);
+    if (selected != shortestTime) shortestTime->value(false);
+    if (selected != leastStops) leastStops->value(false);
+}
+
 void Application::onSearchClicked(bobcat::Widget* sender){
 
     string startAirport = start->text();
@@ -117,15 +124,15 @@ void Application::onSearchClicked(bobcat::Widget* sender){
     Waypoint* result = nullptr;
     string mode = "";
 
-    if(cheapest->checked()){
+    if(cheapest->value()){
         result = graph.ucsPrice(startV, destV);
         mode = "Cheapest Price";
     }
-    else if(shortestTime->checked()){
+    else if(shortestTime->value()){
         result = graph.ucsTime(startV, destV);
         mode = "Shortest Time";
     }
-    else if(leastStops->checked()){
+    else if(leastStops->value()){
         result = graph.bfs(startV,destV);
         mode = "Fewest Stops";
     }
