@@ -153,8 +153,15 @@ void Application::onSearchClicked(bobcat::Widget* sender){
     }
     
     reverse(route.begin(),route.end());
+
+    int stops;
     
-    int stops = route.size() - 1;
+    if(route.size() <= 1 ){
+         stops = 0;
+    }
+    else {
+        stops = route.size() - 2;
+    }
 
     string output = "Search Type: " + mode + "\n\nRoute:\n";
 
