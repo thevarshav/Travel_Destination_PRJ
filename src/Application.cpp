@@ -1,9 +1,11 @@
+
 #include <Application.h>
 #include <bobcat_ui/bobcat_ui.h>
 #include <bobcat_ui/button.h>
 #include <bobcat_ui/checkbox.h>
 #include <bobcat_ui/dropdown.h>
 #include <bobcat_ui/window.h>
+#include <cstddef>
 #include <iostream>
 #include <Graph.h>
 #include <fstream>
@@ -81,7 +83,7 @@ void Application::loadGraphFromFile(const string& filename){
             toIndex >= 0 && toIndex < graph.vertices.size()) {
             Vertex* vFrom = graph.vertices[fromIndex];
             Vertex* vTo   = graph.vertices[toIndex];
-            graph.addDirectedEdge(vFrom, vTo, price, time);
+            graph.addEdge(vFrom, vTo, time, price);
         }
     }
 
@@ -156,7 +158,7 @@ void Application::onSearchClicked(bobcat::Widget* sender){
 
     string output = "Search Type: " + mode + "\n\nRoute:\n";
 
-    for(int i = 0; i <route.size(); i++){
+    for(size_t i = 0; i <route.size(); i++){
         output += route[i];
         if(i < route.size() - 1){
             output += "->";

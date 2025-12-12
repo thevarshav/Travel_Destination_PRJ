@@ -32,7 +32,7 @@ struct Edge {
     float price;
     float time;
 
-    Edge(Vertex *from, Vertex *to, double price, double time) {
+    Edge(Vertex *from, Vertex *to, float time, float price) {
         this->from = from;
         this->to = to;
         this->price = price;
@@ -63,13 +63,16 @@ struct Waypoint {
         totalTime = 0;
     }
 
-    void expand() {
+    void expand(HashTable<std::string> &seen) {
         for (int i = 0; i < vertex->edgeList.size(); i++) {
-            Waypoint *temp = new Waypoint(vertex->edgeList[i]->to);
-            temp->parent = this;
-            temp->totalPrice = this->totalPrice + vertex->edgeList[i]->price;
-            temp->totalTime = this->totalTime + vertex->edgeList[i]->time;
-            children.append(temp);
+            Vertex* neighbor = vertex->edgeList[i]->to;
+            if (!seen.search(neighbor->data)) {
+                Waypoint* temp = new Waypoint(neighbor);
+                temp->parent = this;
+                temp->totalPrice = this->totalPrice + vertex->edgeList[i]->price;
+                temp->totalTime = this->totalTime + vertex->edgeList[i]->time;
+                children.append(temp);
+            }
         }
     }
 };
@@ -99,16 +102,31 @@ struct Graph {
     return v;
     }
 
-    void addVertex(Vertex *v) { vertices.append(v); }
-
-    void addEdge(Vertex *x, Vertex *y, int price, double time) {
-        x->edgeList.append(new Edge(x, y, price, time));
-        y->edgeList.append(new Edge(y, x, price, time));
+    bool edgeExists(Vertex* a, Vertex* b) {
+        for(int i = 0; i < a->edgeList.size(); i++)
+            if(a->edgeList[i]->to == b) return true;
+        return false;
     }
 
-    void addDirectedEdge(Vertex *x, Vertex *y, int price, double time) {
-        x->edgeList.append(new Edge(x, y, price, time));
+    void addEdge(Vertex *x, Vertex *y, float time, float price) {
+        if(!edgeExists(x, y)) x->edgeList.append(new Edge(x, y, time, price));
+        if(!edgeExists(y, x)) y->edgeList.append(new Edge(y, x, time, price));
     }
+
+    void addDirectedEdge(Vertex *x, Vertex *y, float time, float price) {
+        if(!edgeExists(x, y)) x->edgeList.append(new Edge(x, y, time, price));
+    }
+
+    /*void addVertex(Vertex *v) { vertices.append(v); }
+
+    void addEdge(Vertex *x, Vertex *y, float time, float price) {
+        x->edgeList.append(new Edge(x, y, time, price));
+        y->edgeList.append(new Edge(y, x, time, price));
+    }
+
+    void addDirectedEdge(Vertex *x, Vertex *y, float time, float price) {
+        x->edgeList.append(new Edge(x, y, time, price));
+    }*/
 
     Waypoint *bfs(Vertex *start, Vertex *destination) {
         std::cout << "Running Breadth-First Search" << std::endl;
@@ -129,7 +147,7 @@ struct Graph {
                 return result;
             }
 
-            result->expand();
+            result->expand(seen);
             // Get the neighbors of the current vertex
             // that we are on...
 
@@ -190,7 +208,7 @@ struct Graph {
                 return result;
             }
 
-            result->expand();
+            result->expand(seen);
 
             std::cout << std::endl
                       << "Expanding " << result->vertex->data << std::endl;
@@ -245,7 +263,7 @@ struct Graph {
                 return result;
             }
 
-            result->expand();
+            result->expand(seen);
 
             std::cout << "Expanding " << result->vertex->data << std::endl;
 
@@ -363,7 +381,7 @@ struct Graph {
         if (current->vertex == destination)
             return current;
 
-        current->expand();
+        current->expand(seen);
 
         for (int i = 0; i < current->children.size(); i++) {
             Waypoint* child = current->children[i];
