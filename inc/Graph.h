@@ -323,7 +323,7 @@ struct Graph {
                     // Sort the frontier
                     int j = frontier.size() - 1;
                     while (j > 0 && frontier.data[j]->totalPrice 
-                                       < frontier.data[j - 1]->totalPrice) {
+                                       > frontier.data[j - 1]->totalPrice) {
                         Waypoint *temp = frontier.data[j];
                         frontier.data[j] = frontier.data[j - 1];
                         frontier.data[j - 1] = temp;
