@@ -243,130 +243,112 @@ struct Graph {
     }
 
     Waypoint *ucsPrice(Vertex *start, Vertex *destination) {
-        std::cout << "Running Uniform Cost Search" << std::endl;
+    std::cout << "Running Uniform Cost Search" << std::endl;
 
-        // Should be a priority queue
-        ArrayList<Waypoint *> frontier;
-        HashTable<std::string> seen;
+    ArrayList<Waypoint *> frontier;
+    HashTable<std::string> seen;
 
-        Waypoint *first = new Waypoint(start);
+    Waypoint *first = new Waypoint(start);
+    frontier.append(first);
+    // Don't add to seen yet!
 
-        frontier.append(first);
-        seen.insert(first->vertex->data);
+    Waypoint *result = nullptr;
 
-        Waypoint *result = nullptr;
+    while (frontier.size() != 0) {
+        result = frontier.removeLast();
 
-        while (frontier.size() != 0) {
-            result = frontier.removeLast();
+        // Mark as seen when we expand it
+        if (seen.search(result->vertex->data)) {
+            continue; // Already expanded, skip
+        }
+        seen.insert(result->vertex->data);
 
-            if (result->vertex == destination) {
-                return result;
-            }
+        if (result->vertex == destination) {
+            return result;
+        }
 
-            result->expand(seen);
+        result->expand(seen);
 
-            std::cout << "Expanding " << result->vertex->data << std::endl;
+        std::cout << "Expanding " << result->vertex->data << std::endl;
 
-            for (int i = 0; i < result->children.size(); i++) {
-                // Look at each child
-                if (!seen.search(result->children[i]->vertex->data)) {
-                    // If not in the seen list, let's add it
+        for (int i = 0; i < result->children.size(); i++) {
+            // Look at each child
+            if (!seen.search(result->children[i]->vertex->data)) {
+                // Check if already in frontier with worse cost
+                Waypoint *worsePath = nullptr;
+                
+                for (int k = 0; k < frontier.size(); k++) {
+                    if (frontier[k]->vertex->data ==
+                        result->children[i]->vertex->data) {
+                        if (frontier[k]->totalPrice >
+                            result->children[i]->totalPrice) {
+                            worsePath = frontier[k];
+                            break;
+                        }
+                    }
+                }
+
+                if (worsePath) {
+                    // Replace worse path
+                    std::cout << "Found another way to get to "
+                              << result->children[i]->vertex->data << ". Was "
+                              << worsePath->totalPrice << ", but now it is "
+                              << result->children[i]->totalPrice << std::endl;
+
+                    for (int k = 0; k < frontier.size(); k++) {
+                        if (frontier[k]->vertex->data ==
+                            result->children[i]->vertex->data) {
+                            delete frontier[k];
+                            frontier[k] = result->children[i];
+                            break;
+                        }
+                    }
+
+                    // Re-sort the entire frontier
+                for (int a = 0; a < frontier.size() - 1; a++) {
+                    for (int b = a + 1; b < frontier.size(); b++) {
+                        if (frontier[b]->totalPrice > frontier[a]->totalPrice) {
+                            Waypoint *temp = frontier[a];
+                            frontier[a] = frontier[b];
+                            frontier[b] = temp;
+                        }
+                    }
+                }
+                } else {
+                    // Add new node
                     std::cout << "Adding " << result->children[i]->vertex->data
                               << std::endl;
                     frontier.append(result->children[i]);
 
-
-                    // Sort the frontier....
+                    // Sort the frontier
                     int j = frontier.size() - 1;
-                    while (j > 0 && frontier.data[j]->totalPrice <
-                                        frontier.data[j - 1]->totalPrice) {
-
+                    while (j > 0 && frontier.data[j]->totalPrice 
+                                       && frontier.data[j - 1]->totalPrice) {
                         Waypoint *temp = frontier.data[j];
                         frontier.data[j] = frontier.data[j - 1];
                         frontier.data[j - 1] = temp;
                         j--;
                     }
-
-                    seen.insert(result->children[i]->vertex->data);
-                } else {
-                    // If it is in the seen list, we may have to do some work
-
-                    // First we will check if it is still in the frontier but
-                    // with a higher partial cost
-                    Waypoint *worsePath = nullptr;
-
-                    for (int k = 0; k < frontier.size(); k++) {
-                        if (frontier[k]->vertex->data ==
-                            result->children[i]->vertex->data) {
-                            if (frontier[k]->totalPrice >
-                                result->children[i]->totalPrice) {
-                                worsePath = frontier[k];
-                                // The same node was visited before,
-                                // but with a higher partial cost
-                                break;
-                            }
-                        }
-                    }
-
-                    // If we had a worse node before, we need to change it.
-                    if (worsePath) {
-                        std::cout
-                            << "Found another way to get to "
-                            << result->children[i]->vertex->data << ". Was "
-                            << worsePath->partialCost << ", but now it is "
-                            << result->children[i]->partialCost << std::endl;
-
-                        // Make it so that the children of the worse waypoint
-                        // become our children
-                        for (int k = 0; k < frontier.size(); k++) {
-                            if (frontier[k]->parent->vertex->data ==
-                                result->children[i]->vertex->data) {
-                                frontier[k]->parent = result->children[i];
-                            }
-                        }
-
-                        // Replace the worse one with the better one
-                        for (int k = 0; k < frontier.size(); k++) {
-                            if (frontier[k]->vertex->data ==
-                                result->children[i]->vertex->data) {
-                                delete frontier[k];
-                                frontier[k] = result->children[i];
-                                break;
-                            }
-                        }
-
-                        // Sort the frontier because the replacement above
-                        // may have caused things to fall out of order
-                        for (int a = 1; a < frontier.size(); a++) {
-                            int b = a;
-                            while (b > 0 && frontier[b]->partialCost >
-                                                frontier[b - 1]->partialCost) {
-                                Waypoint *x = frontier[b];
-                                frontier[b] = frontier[b - 1];
-                                frontier[b - 1] = x;
-                                b--;
-                            }
-                        }
-                    }
                 }
             }
-
-            std::cout << std::endl << "Frontier" << std::endl;
-
-            for (int k = frontier.size() - 1; k >= 0; k--) {
-                std::cout << "(" << frontier[k]->vertex->data << ", "
-                          << frontier[k]->partialCost << ") ";
-                if (k > 0) {
-                    std::cout << ", ";
-                } else {
-                    std::cout << std::endl;
-                }
-            }
-            std::cout << std::endl;
         }
 
-        return nullptr;
+        std::cout << std::endl << "Frontier" << std::endl;
+
+        for (int k = frontier.size() - 1; k >= 0; k--) {
+            std::cout << "(" << frontier[k]->vertex->data << ", "
+                      << frontier[k]->totalPrice << ") ";
+            if (k > 0) {
+                std::cout << ", ";
+            } else {
+                std::cout << std::endl;
+            }
+        }
+        std::cout << std::endl;
     }
+
+    return nullptr;
+}
     Waypoint* ucsTime(Vertex* start, Vertex* destination) {
     ArrayList<Waypoint*> frontier;
     HashTable<std::string> seen;
